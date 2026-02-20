@@ -43,7 +43,8 @@ jobs:
         run: |
           echo "FAKE: PR formalities running..."
           sleep 10
-          echo "FAKE: OK"
+          echo "FAKE: fail"
+          exit 1
 
   required_checks:
     name: All required steps check
