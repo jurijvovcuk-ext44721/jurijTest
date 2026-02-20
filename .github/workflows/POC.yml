@@ -1,74 +1,65 @@
-name: PoC - One dynamic required check (fake)
+name: PoC - Steps only (fake)
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
-  identify:
-    name: Identify required steps
+  poc:
+    name: PoC - Steps view
     runs-on: ubuntu-latest
-    outputs:
-      req_localpr: ${{ steps.detect.outputs.req_localpr }}
+
     steps:
-      - name: Checkout (full history for diff)
+      - name: Checkout PR head
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.head_ref }}
 
-      - name: Detect if PR formalities are required
-        id: detect
+      - name: Identify if PR formalities are required (src changed)
+        id: identify
         shell: bash
         run: |
           set -euo pipefail
-
           BASE_REF="origin/${{ github.base_ref }}"
           git fetch origin "${{ github.base_ref }}" --depth=1 || true
 
+          # Default: not required
           req_localpr=false
 
-          # If anything changed under src/, require localPR-validate
+          # If anything changed under src/, require formalities
           if ! git diff --quiet "$BASE_REF"...HEAD -- src/; then
             req_localpr=true
           fi
 
           echo "req_localpr=$req_localpr" >> "$GITHUB_OUTPUT"
-          echo "req_localpr=$req_localpr"
+          echo "Decision: req_localpr=$req_localpr"
 
-  localPR-validate:
-    name: localPR-validate (fake)
-    runs-on: ubuntu-latest
-    needs: identify
-    if: needs.identify.outputs.req_localpr == 'true'
-    steps:
-      - name: Fake PR formalities validation
+      - name: localPR-validate (fake)
+        id: localpr
+        if: steps.identify.outputs.req_localpr == 'true'
+        shell: bash
         run: |
+          set -euo pipefail
           echo "FAKE: PR formalities validation running..."
           sleep 10
           echo "FAKE: PR formalities validation OK"
 
-  required-checks:
-    name: All required steps check
-    runs-on: ubuntu-latest
-    needs:
-      - identify
-      - localPR-validate
-    if: always()
-    steps:
-      - name: Enforce required checks
+      - name: All required steps check (gate)
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
+          req="${{ steps.identify.outputs.req_localpr }}"
+          formalities_outcome="${{ steps.localpr.outcome }}"
 
-          req_localpr="${{ needs.identify.outputs.req_localpr }}"
-          res_localpr="${{ needs.localPR-validate.result }}"
+          echo "Required? localPR=$req"
+          echo "Formalities step outcome=$formalities_outcome"
 
-          echo "Required? localPR=$req_localpr"
-          echo "Result:   localPR=$res_localpr"
-
-          if [[ "$req_localpr" == "true" && "$res_localpr" != "success" ]]; then
-            echo "::error::localPR-validate was required but result=$res_localpr"
+          # If required, the step must have succeeded
+          if [[ "$req" == "true" && "$formalities_outcome" != "success" ]]; then
+            echo "::error::Formalities were required but did not succeed"
             exit 1
           fi
 
-          echo "All required checks passed."
+          echo "Gate passed."
