@@ -7,10 +7,7 @@ on:
 env:
   PATHS_FOR_SO_VALIDATION: |
     src/
-    infra/
-    .github/workflows/
-    package.json
-
+    
 jobs:
   identify:
     name: Identify required steps
@@ -40,8 +37,8 @@ jobs:
           done <<< "${PATHS_FOR_SO_VALIDATION}"
 
           echo "run_so_validation=$run_so_validation" >> "$GITHUB_OUTPUT"
-  localpr_validate:
-    name: localPR-validate (fake)
+  validate_against_so:
+    name: Validate against scratch org
     runs-on: ubuntu-latest
     needs: identify
     if: needs.identify.outputs.run_so_validation == 'true'
@@ -56,7 +53,7 @@ jobs:
   required_checks:
     name: All required steps check
     runs-on: ubuntu-latest
-    needs: [identify, localpr_validate]
+    needs: [identify, validate_against_so]
     if: always()
     steps:
       - name: Gate
@@ -65,7 +62,7 @@ jobs:
           set -euo pipefail
 
           req="${{ needs.identify.outputs.run_so_validation }}"
-          res="${{ needs.localpr_validate.result }}"
+          res="${{ needs.validate_against_so.result }}"
 
           echo "Required? $req"
           echo "Validation job result: $res"
