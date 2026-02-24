@@ -7,7 +7,6 @@ on:
 env:
   PATHS_FOR_SO_VALIDATION: |
     src/
-    
 jobs:
   identify:
     name: Identify required steps
