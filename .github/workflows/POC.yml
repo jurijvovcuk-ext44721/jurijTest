@@ -32,7 +32,7 @@ jobs:
           git fetch origin "${{ github.base_ref }}" --depth=1
 
           run_so_validation=false
-          while IFS= read -r p; do
+          while read -r path_to_check; do
             if ! git diff --quiet "$BASE_REF"...HEAD -- "$p"; then
               run_so_validation=true
               break
