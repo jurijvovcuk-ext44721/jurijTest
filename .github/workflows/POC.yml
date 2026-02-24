@@ -29,7 +29,7 @@ jobs:
         shell: bash
         run: |
           BASE_REF="origin/${{ github.base_ref }}"
-          git fetch origin "${{ github.base_ref }}" --depth=1 || true
+          git fetch origin "${{ github.base_ref }}" --depth=1
 
           req_localpr=false
           while IFS= read -r p; do
