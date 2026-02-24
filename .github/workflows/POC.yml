@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.head_ref }}
 
-      - name: Detect if relevant paths changed
+      - name: Detect if run SO validation
         id: detect
         shell: bash
         run: |
@@ -33,7 +33,7 @@ jobs:
 
           run_so_validation=false
           while read -r path_to_check; do
-            if ! git diff --quiet "$BASE_REF"...HEAD -- "$p"; then
+            if ! git diff --quiet "$BASE_REF"...HEAD -- "$path_to_check"; then
               run_so_validation=true
               break
             fi
