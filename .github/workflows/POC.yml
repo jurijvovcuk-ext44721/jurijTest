@@ -7,6 +7,7 @@ on:
 env:
   PATHS_FOR_SO_VALIDATION: |
     src/
+    
 jobs:
   identify:
     name: Identify required steps
@@ -29,6 +30,7 @@ jobs:
 
           run_so_validation=false
           while read -r path_to_check; do
+            [[ -z "$path_to_check" ]] && continue
             if ! git diff --quiet "$BASE_REF"...HEAD -- "$path_to_check"; then
               run_so_validation=true
               break
