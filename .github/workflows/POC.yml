@@ -1,4 +1,4 @@
-name: PoC - Identify then validate (fake)
+name: Validate Pull Request
 
 on:
   pull_request:
