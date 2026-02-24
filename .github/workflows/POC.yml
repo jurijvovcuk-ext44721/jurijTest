@@ -59,17 +59,6 @@ jobs:
       - name: Gate
         shell: bash
         run: |
-          set -euo pipefail
-
           req="${{ needs.identify.outputs.run_so_validation }}"
           res="${{ needs.validate_against_so.result }}"
-
-          echo "Required? $req"
-          echo "Validation job result: $res"
-
-          if [[ "$req" == "true" && "$res" != "success" ]]; then
-            echo "::error::localPR-validate was required but result=$res"
-            exit 1
-          fi
-
-          echo "Gate passed."
+          [[ "$req" == "true" && "$res" != "success" ]] && exit 1
