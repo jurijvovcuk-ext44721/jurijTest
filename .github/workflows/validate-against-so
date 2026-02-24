@@ -1,0 +1,41 @@
+name: Validate against scratch org
+
+on:
+  workflow_call:
+
+jobs:
+  validate:
+    name: Validate against scratch org
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node (example)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies (example)
+        run: |
+          echo "Installing..."
+          # npm ci
+
+      - name: Lint (example)
+        run: |
+          echo "Linting..."
+          # npm run lint
+
+      - name: Unit tests (example)
+        run: |
+          echo "Running tests..."
+          # npm test
+
+      - name: Fake SO Validation (placeholder for your real scratch org validation)
+        run: |
+          echo "FAKE: SO validation running..."
+          sleep 10
+          echo "FAKE: fail"
+          exit 1
