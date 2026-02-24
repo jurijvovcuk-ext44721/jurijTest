@@ -43,9 +43,9 @@ jobs:
     needs: identify
     if: needs.identify.outputs.run_so_validation == 'true'
     steps:
-      - name: Fake PR formalities validation
+      - name: Fake SO Validation
         run: |
-          echo "FAKE: PR formalities running..."
+          echo "FAKE: SO validation running..."
           sleep 10
           echo "FAKE: fail"
           exit 1
