@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened]
 
 env:
-  # space-separated list => no blank lines, easy to extend
+  # space-separated list; add more folders/files here
   PATHS_FOR_SO_VALIDATION: "src/ infra/ .github/workflows/ package.json"
 
 jobs:
@@ -37,19 +37,13 @@ jobs:
           done
 
           echo "run_so_validation=$run_so_validation" >> "$GITHUB_OUTPUT"
+          echo "Decision: run_so_validation=$run_so_validation"
 
   validate_against_so:
     name: Validate against scratch org
-    runs-on: ubuntu-latest
     needs: identify
     if: needs.identify.outputs.run_so_validation == 'true'
-    steps:
-      - name: Fake SO Validation
-        run: |
-          echo "FAKE: SO validation running..."
-          sleep 10
-          echo "FAKE: fail"
-          exit 1
+    uses: ./.github/workflows/validate-against-so.yml
 
   required_checks:
     name: All required steps check
@@ -62,6 +56,10 @@ jobs:
         run: |
           req="${{ needs.identify.outputs.run_so_validation }}"
           res="${{ needs.validate_against_so.result }}"
+
           if [[ "$req" == "true" && "$res" != "success" ]]; then
+            echo "::error::validate_against_so was required but result=$res"
             exit 1
           fi
+
+          echo "Gate passed."
