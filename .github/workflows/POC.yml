@@ -5,9 +5,9 @@ on:
     types: [opened, synchronize, reopened]
 
 env:
-  PATHS_FOR_SO_VALIDATION: |
-    src/
-    
+  # space-separated list (no multiline block, no empty lines)
+  PATHS_FOR_SO_VALIDATION: "src/ infra/ .github/workflows/ package.json"
+
 jobs:
   identify:
     name: Identify required steps
@@ -29,15 +29,15 @@ jobs:
           git fetch origin "${{ github.base_ref }}" --depth=1
 
           run_so_validation=false
-          while read -r path_to_check; do
-            [[ -z "$path_to_check" ]] && continue
+          for path_to_check in $PATHS_FOR_SO_VALIDATION; do
             if ! git diff --quiet "$BASE_REF"...HEAD -- "$path_to_check"; then
               run_so_validation=true
               break
             fi
-          done <<< "${PATHS_FOR_SO_VALIDATION}"
+          done
 
           echo "run_so_validation=$run_so_validation" >> "$GITHUB_OUTPUT"
+
   validate_against_so:
     name: Validate against scratch org
     runs-on: ubuntu-latest
