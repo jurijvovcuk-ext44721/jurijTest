@@ -16,7 +16,7 @@ jobs:
     name: Identify required steps
     runs-on: ubuntu-latest
     outputs:
-      req_localpr: ${{ steps.detect.outputs.req_localpr }}
+      run_so_validation: ${{ steps.detect.outputs.run_so_validation }}
     steps:
       - name: Checkout PR head (full history for diff)
         uses: actions/checkout@v4
@@ -31,21 +31,21 @@ jobs:
           BASE_REF="origin/${{ github.base_ref }}"
           git fetch origin "${{ github.base_ref }}" --depth=1
 
-          req_localpr=false
+          run_so_validation=false
           while IFS= read -r p; do
             [[ -z "$p" ]] && continue
             if ! git diff --quiet "$BASE_REF"...HEAD -- "$p"; then
-              req_localpr=true
+              run_so_validation=true
               break
             fi
           done <<< "${PATHS_FOR_SO_VALIDATION}"
 
-          echo "req_localpr=$req_localpr" >> "$GITHUB_OUTPUT"
+          echo "run_so_validation=$run_so_validation" >> "$GITHUB_OUTPUT"
   localpr_validate:
     name: localPR-validate (fake)
     runs-on: ubuntu-latest
     needs: identify
-    if: needs.identify.outputs.req_localpr == 'true'
+    if: needs.identify.outputs.run_so_validation == 'true'
     steps:
       - name: Fake PR formalities validation
         run: |
@@ -65,7 +65,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          req="${{ needs.identify.outputs.req_localpr }}"
+          req="${{ needs.identify.outputs.run_so_validation }}"
           res="${{ needs.localpr_validate.result }}"
 
           echo "Required? $req"
