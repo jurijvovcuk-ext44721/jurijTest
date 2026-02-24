@@ -4,6 +4,13 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+env:
+  PATHS_FOR_SO_VALIDATION: |
+    src/
+    infra/
+    .github/workflows/
+    package.json
+
 jobs:
   identify:
     name: Identify required steps
@@ -17,7 +24,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.head_ref }}
 
-      - name: Detect if src changed
+      - name: Detect if relevant paths changed
         id: detect
         shell: bash
         run: |
@@ -26,9 +33,13 @@ jobs:
           git fetch origin "${{ github.base_ref }}" --depth=1 || true
 
           req_localpr=false
-          if ! git diff --quiet "$BASE_REF"...HEAD -- src/; then
-            req_localpr=true
-          fi
+          while IFS= read -r p; do
+            [[ -z "$p" ]] && continue
+            if ! git diff --quiet "$BASE_REF"...HEAD -- "$p"; then
+              req_localpr=true
+              break
+            fi
+          done <<< "${PATHS_FOR_SO_VALIDATION}"
 
           echo "req_localpr=$req_localpr" >> "$GITHUB_OUTPUT"
           echo "Decision: req_localpr=$req_localpr"
