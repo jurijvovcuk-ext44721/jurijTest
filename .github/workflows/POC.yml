@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened]
 
 env:
-  # space-separated list (no multiline block, no empty lines)
+  # space-separated list => no blank lines, easy to extend
   PATHS_FOR_SO_VALIDATION: "src/ infra/ .github/workflows/ package.json"
 
 jobs:
@@ -25,12 +25,12 @@ jobs:
         id: detect
         shell: bash
         run: |
-          BASE_REF="origin/${{ github.base_ref }}"
-          git fetch origin "${{ github.base_ref }}" --depth=1
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
 
           run_so_validation=false
           for path_to_check in $PATHS_FOR_SO_VALIDATION; do
-            if ! git diff --quiet "$BASE_REF"...HEAD -- "$path_to_check"; then
+            if ! git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- "$path_to_check"; then
               run_so_validation=true
               break
             fi
@@ -62,4 +62,6 @@ jobs:
         run: |
           req="${{ needs.identify.outputs.run_so_validation }}"
           res="${{ needs.validate_against_so.result }}"
-          [[ "$req" == "true" && "$res" != "success" ]] && exit 1
+          if [[ "$req" == "true" && "$res" != "success" ]]; then
+            exit 1
+          fi
