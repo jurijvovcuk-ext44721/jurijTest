@@ -43,7 +43,7 @@ jobs:
     name: Validate against scratch org
     needs: identify
     if: needs.identify.outputs.run_so_validation == 'true'
-    uses: ./.github/workflows/validate-against-so.yml
+    uses: jurijvovcuk-ext44721/jurijTest/.github/workflows/validate-against-so.yml@main
 
   required_checks:
     name: All required steps check
