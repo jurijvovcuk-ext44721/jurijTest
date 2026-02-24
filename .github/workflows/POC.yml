@@ -28,7 +28,6 @@ jobs:
         id: detect
         shell: bash
         run: |
-          set -euo pipefail
           BASE_REF="origin/${{ github.base_ref }}"
           git fetch origin "${{ github.base_ref }}" --depth=1 || true
 
@@ -42,8 +41,6 @@ jobs:
           done <<< "${PATHS_FOR_SO_VALIDATION}"
 
           echo "req_localpr=$req_localpr" >> "$GITHUB_OUTPUT"
-          echo "Decision: req_localpr=$req_localpr"
-
   localpr_validate:
     name: localPR-validate (fake)
     runs-on: ubuntu-latest
