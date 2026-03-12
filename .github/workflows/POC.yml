@@ -2,7 +2,7 @@ name: Validate Pull Request
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 env:
   # space-separated list; add more folders/files here
@@ -28,16 +28,20 @@ jobs:
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
           HEAD_SHA="${{ github.event.pull_request.head.sha }}"
 
-          run_so_validation=false
-          for path_to_check in $PATHS_FOR_SO_VALIDATION; do
-            if ! git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- "$path_to_check"; then
-              run_so_validation=true
-              break
-            fi
+          DIFF_FROM="$BASE_SHA"
+          [[ "${{ github.event.action }}" == "synchronize" ]] && DIFF_FROM="${{ github.event.before }}"
+
+          run_so_validation=true
+
+          for file in $(git diff --name-only "$DIFF_FROM" "$HEAD_SHA"); do
+            match=false
+            for path in $PATHS_FOR_SO_VALIDATION; do
+              [[ "$file" == "$path"* || "$file" == "$path" ]] && match=true
+            done
+            [[ "$match" == false ]] && run_so_validation=false && break
           done
 
           echo "run_so_validation=$run_so_validation" >> "$GITHUB_OUTPUT"
-          echo "Decision: run_so_validation=$run_so_validation"
 
   validate_against_so:
     name: Validate against scratch org
