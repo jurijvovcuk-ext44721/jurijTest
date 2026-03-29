@@ -1,2 +1,2 @@
 # jurijTest
-repo for testing github actions
+repo for testing github actionsdd
